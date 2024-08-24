@@ -1,9 +1,8 @@
-import os
 import pandas as pd
+import os
 from tqdm import tqdm
 
-
-# remove the saving and re-loading of formatted datasets (line 70-76)
+# remove the saving and re-loading of formatted datasets (line 80-76) 
 
 def load_csv(file_path):
     """Load a CSV file into a DataFrame."""
@@ -23,18 +22,28 @@ def get_categories(tags, tag_to_category):
     """Get the list of categories corresponding to the provided tags."""
     return [tag_to_category[tag] for tag in tags.split('|') if tag in tag_to_category]
 
-def process_items(tags, tag_to_category, main_categories):
-    """Process the tags to extract and join categories if all main categories are present."""
+def process_items_all_categories(tags, tag_to_category):
+    """Process the tags to extract and join categories without filtering for main categories."""
+    categories = get_categories(tags, tag_to_category)
+    return '|'.join(categories)
+
+def process_items_main_categories(tags, tag_to_category, main_categories):
+    """Process the tags to extract and join categories only if all main categories are present."""
     categories = get_categories(tags, tag_to_category)
     if main_categories.issubset(categories):
         return '|'.join(categories)
     else:
         return None
 
-def filter_dataset(input_file, tag_to_category, main_categories, output_file):
-    """Filter the dataset based on the presence of all main categories and save it to a CSV file."""
+def filter_dataset(input_file, tag_to_category, main_categories, output_file, mode):
+    """Filter the dataset and save it to a CSV file based on the chosen mode."""
     dataset = load_csv(input_file)
-    dataset['Categories'] = dataset['Tags'].apply(lambda tags: process_items(tags, tag_to_category, main_categories))
+    
+    if mode == 'all_categories':
+        dataset['Categories'] = dataset['Tags'].apply(lambda tags: process_items_all_categories(tags, tag_to_category))
+    elif mode == 'main_categories':
+        dataset['Categories'] = dataset['Tags'].apply(lambda tags: process_items_main_categories(tags, tag_to_category, main_categories))
+    
     dataset = dataset.dropna()
     dataset.to_csv(output_file, index=False)
 
@@ -56,19 +65,20 @@ def create_separate_dfs(dataset, main_categories, output_folder='./'):
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
     
-    for category, data in category_data.items():
-        category_df = pd.DataFrame(data, columns=['youtube_id', 'time_start', 'time_end', 'tag'])
-        output_file_path = os.path.join(output_folder, f'{category}.csv')
-        category_df.to_csv(output_file_path, index=False)
+    for category, data in tqdm(category_data.items()):
+        if data:  # Only create files for categories that have data
+            category_df = pd.DataFrame(data, columns=['youtube_id', 'time_start', 'time_end', 'tag'])
+            output_file_path = os.path.join(output_folder, f'{category}.csv')
+            category_df.to_csv(output_file_path, index=False)
 
-def process_hvu_dataset(hvu_train_file, hvu_val_file, hvu_tags_file, train_output_folder, val_output_folder):
+def process_hvu_dataset(hvu_train_file, hvu_val_file, hvu_tags_file, train_output_folder, val_output_folder, mode):
     """Main function to process HVU datasets and create category-specific CSV files."""
     tag_to_category = map_tags_to_categories(hvu_tags_file)
     main_categories = get_main_categories(hvu_tags_file)
 
-    # Process and filter the train and validation datasets
-    filter_dataset(hvu_train_file, tag_to_category, main_categories, './hvu_train_formatted.csv')
-    filter_dataset(hvu_val_file, tag_to_category, main_categories, './hvu_val_formatted.csv')
+    # Process and filter the train and validation datasets based on the chosen mode
+    filter_dataset(hvu_train_file, tag_to_category, main_categories, './hvu_train_formatted.csv', mode)
+    filter_dataset(hvu_val_file, tag_to_category, main_categories, './hvu_val_formatted.csv', mode)
 
     # Load the processed datasets
     hvu_train = load_csv('./hvu_train_formatted.csv')
@@ -85,10 +95,21 @@ if __name__ == "__main__":
     train_output_folder = './hvu_train/'
     val_output_folder = './hvu_val/'
 
-    process_hvu_dataset(
-        hvu_train_file=hvu_train_file,
-        hvu_val_file=hvu_val_file,
-        hvu_tags_file=hvu_tags_file,
-        train_output_folder=train_output_folder,
-        val_output_folder=val_output_folder
-    )
+    # Choose one: 'all_categories' or 'main_categories'
+
+    ## main_categories: Creates data subsets for only those files/videos which are present in all the 6 main categories.
+    ## all_categories: Creates data subsets for the 6 main categories by ignoring the above criteria.
+
+    mode = 'main_categories'
+
+    if mode not in ['all_categories', 'main_categories']:
+        print("Invalid mode selected. Please choose either 'all_categories' or 'main_categories'.")
+    else:
+        process_hvu_dataset(
+            hvu_train_file=hvu_train_file,
+            hvu_val_file=hvu_val_file,
+            hvu_tags_file=hvu_tags_file,
+            train_output_folder=train_output_folder,
+            val_output_folder=val_output_folder,
+            mode=mode
+        )
