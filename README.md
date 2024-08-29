@@ -30,3 +30,11 @@ Check [HVU downloader instruction](https://github.com/holistic-video-understandi
 
 ## Accessing Missing Videos and Test Videos
 To access the Test videos and missing videos, please fill this [form](https://forms.gle/8qpoDaarjd7WNn7E7) to obtain the dataset.
+
+## Zip File Information
+
+1. **HVU_Train_V1.0.zip**: Contains all the training filenames along with their tags and timestamps.
+2. **HVU_Val_V1.0.zip**: Contains all the Validation filenames along with their tags and timestamps.
+3. **label_mappings.zip**: Contains all the label mappings (tags to numerical values) for each of the 6 main categories i.e. action, attribute, concept, event, object and scene.
+4. **training_file_with_labels.zip**: Contains all the training filenames divided according to the 6 main categories and their corresponding labels.
+5. **val_files_with_labels.zip**: Contains all the validation filenames divided according to the 6 main categories and their corresponding labels.
