@@ -33,8 +33,7 @@ To access the Test videos and missing videos, please fill this [form](https://fo
 
 ## Zip File Information
 
-1. **HVU_Train_V1.0.zip**: Contains all the training filenames along with their tags and timestamps.
-2. **HVU_Val_V1.0.zip**: Contains all the Validation filenames along with their tags and timestamps.
-3. **label_mappings.zip**: Contains all the label mappings (tags to numerical values) for each of the 6 main categories i.e. action, attribute, concept, event, object and scene.
-4. **training_file_with_labels.zip**: Contains all the training filenames divided according to the 6 main categories and their corresponding labels.
-5. **val_files_with_labels.zip**: Contains all the validation filenames divided according to the 6 main categories and their corresponding labels.
+1. **zeroshot_category_files.zip**: Contains the filenames, along with the labels used for zero-shot validation.
+2. **zeroshot_labels.zip**: Contains the label name and their corresponding label ids for the zeroshot files.
+3. **open_vocab_category_files.zip**: Contains the filenames, along with the labels used for open vocabulary validation.
+4. **open_vocab_labels.zip**: Contains the label name and their corresponding label ids for the open vocabulary files.
